@@ -88,6 +88,8 @@ Variable names may only contain alphanumeric characters. Underscores are not per
 
 Verbosity is encouraged. Variables should always be as verbose as practical. Terse variable names such as "$i" and "$n" are discouraged for anything other than the smallest loop contexts. If a loop contains more than 20 lines of code, the variables for the indices need to have more descriptive names.
 
+As a rule, defining variable in the global scope is NOT allowed. Accessing variable by using "global" keyword or using $_GLOBAL, is the superglobal variable, is NOT permitted.
+
 Constants
 ---------
 
@@ -330,6 +332,13 @@ To check if a variable is null or not, use the is_null() native PHP function::
 When comparing a variable to a value, put the value first and use type testing when applicable::
 
   if (1 === $var)
+
+Superglobals
+------------
+
+We encourage to avoid accessing Superglobals directly, use wrappers.
+
+For example, $_REQUEST is wrapped by sfWebRequest (or its inherited classes) and $_SESSION is wrapped by sfUser (or its inherited classes).
 
 Inline Documentation
 --------------------
