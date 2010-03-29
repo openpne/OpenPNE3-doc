@@ -1,0 +1,272 @@
+=============================================
+OpenPNE3 OAuth 対応アプリケーション作成ガイド
+=============================================
+
+概要
+====
+
+OAuth とは何か。何のためのものか
+--------------------------------
+
+SNS に存在するほとんどのデータはプライバシーのために保護されています。これは、そのデータを扱う場合に、たとえ API を経由してアクセスしたとしても承諾が要求されることを意味します。
+
+もし SNS の利便性を高めるための優れた外部ツールを使用する場合、そのツールは認証を突破しなければいけません。どうすればいいのでしょうか。
+
+これを実現するための古い手法があります。極めて不適切な方法です——その外部ツールはユーザのアカウントとパスワードを共有することを要求するのです。
+
+それよりもいい方法があります。この方法はパスワードを使用しません。使用するのは特定のユーザと関連しないトークンで、そのトークンはいつでも無効化できます。この方法は OAuth と呼ばれています。 OAuth はパスワードを共有するやり方よりも安全です。
+
+このドキュメントでは OpenPNE3 で OAuth を使用するアプリケーションの作成について説明します。
+
+もし OAuth に関するより多くの情報を得たい場合は、 http://oauth.net/core/1.0a を訪れてください。
+
+認可と認証
+----------
+
+OAuth においては「認可」と「認証」は明確に区別されます。
+
+「認証」は、ユーザを ID やパスワードのようなものによって識別することを意味します。
+
+「認可」は認証状態にあるユーザがサードパーティ製アプリケーションが何かをおこなうことを許可することを意味します。
+
+OAuth のフロー
+--------------
+
+.. image:: OAuth_flow_ja.png
+
+二種類のアクセストークン
+-------------------------
+
+OpenPNE は二種類のアクセストークンを使います。「メンバー用アクセストークン」と「管理者用アクセストークン」です。
+
+メンバー用のアクセストークンはメンバー画面で生成されます。そのトークンはメンバーに紐付いたデータへのアクセスを許容します。
+
+管理者用のアクセストークンは管理画面で生成されます。そのトークンは SNS のすべてのデータへのアクセスをおこなえるようにします。
+
+0. アプリケーションの登録
+=========================
+
+SNS の OAuth を使ったアプリケーションを開発したい場合は、そのアプリケーションの情報を登録する必要があります。
+
+これはとても簡単です。 SNS の http://sns.example.com/connection/new (メンバー画面) or http://sns.example.com/pc_backend.php/connection/new (管理画面) に訪れていくつかの情報を入力するだけです。
+
+すると、アプリケーションがその SNS で使用できるようになり、コンシューマキーとコンシューマシークレットを取得できます。これはアプリケーションを識別するために使われます。これは決して公開しないでください。
+
+1. リクエストトークンの入手
+===========================
+
+ * ユーザ画面用 URL: http://sns.example.com/oauth/request_token
+ * 管理画面用 URL: http://sns.example.com/pc_backend.php/request_token
+
+リクエストには、リクエストトークンを入手するためにコンシューマキーを含めるようにする必要があります。リクエストトークンは認可をはじめるための一時的なトークンです。
+
+サンプルリクエスト
+------------------
+
+::
+
+  http://sns.example.com/oauth/request_token?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_version=1.0
+  &oauth_callback=http%3A%2F%2Fexternal.example.com%2F
+
+リクエストパラメータ
+--------------------
+
+  oauth_consumer_key:
+    アプリケーションを識別するためのコンシューマキー
+
+  oauth_nonce:
+    ランダムな文字列
+
+  oauth_signature_method:
+    署名リクエストに用いる署名方式。これは「HMAC-SHA1」である必要があります。
+
+  oauth_signature:
+    署名文字列
+
+  oauth_timestamp:
+    1970年1月1日 00:00:00 (GMT) からの通算秒を表すタイムスタンプ
+
+  oauth_version:
+    OAuth の仕様のバージョン。これは「1.0」です。
+
+  oauth_callback:
+    認可後、 SNS からユーザをアプリケーションにリダイレクトさせるための絶対 URL。もしこのパラメータの値が「oob」である場合、 SNS はリダイレクトをせず、アプリケーションの処理を続行させるための確認用コードを表示します。
+
+サンプルレスポンス
+------------------
+
+::
+
+  oauth_token=tOkEn
+  &oauth_token_secret=sEcReT
+  &oauth_callback_confirmed=true
+
+レスポンスパラメータ
+--------------------
+
+  oauth_token:
+    リクエストトークン
+
+  oauth_token_secret:
+    トークンシークレット
+
+  oauth_callback_confirmed:
+    SNS が oauth_callback パラメータを受け取った結果。これは常に "true" になります。
+
+2. エンドユーザの認可を得る
+===========================
+
+ * ユーザ画面用 URL: http://sns.example.com/oauth/authorize
+ * 管理画面用 URL: http://sns.example.com/pc_backend.php/authorize
+
+アプリケーションは SNS にある認可画面にユーザをリダイレクトさせる必要があります。認可画面ではユーザはデータの操作を許容するか拒否するかを決定することができます。
+
+ユーザはアプリケーションがどのデータにアクセスすることがあるかを知ることができます。
+
+もしユーザが許可した場合、リクエストトークン（「1. リクエストトークンの入手」で取得したもの）はプライベートなデータの一部にアクセスするための権限を得ることができます。
+
+サンプルリクエスト
+------------------
+
+::
+
+  http://sns.example.com/oauth/authorize?oauth_token=oAuThToKeN
+
+リクエストパラメータ
+--------------------
+
+  oauth_token:
+    リクエストトークンの値。この値は「1. リクエストトークンの入手」のレスポンスとして提供されたものです。
+
+3. エンドユーザがアプリケーションに戻ってくる
+=============================================
+
+エンドユーザが認可をおこない、アプリケーションにリダイレクトしてきます。
+
+行き先は、「1. リクエストトークンの入手」の oauth_callback リクエストパラメータとして指定された URL です。
+
+リダイレクトの際には以下のリクエストパラメータも伴います。
+
+リクエストパラメータ
+--------------------
+
+  oauth_token:
+    リクエストトークンの値
+
+  oauth_verifier:
+    確認用コード
+
+oauth_callback パラメータの値が 「oob」の場合、 SNS はエンドユーザに短いコードを表示します。これは oauth_verifier として扱われます。この場合では、アプリケーションはそのコードをアプリケーション内のどこかに入力させるようユーザを導かなければなりません。
+
+4. アクセストークンの入手
+===========================
+
+ * ユーザ画面用 URL: http://sns.example.com/oauth/access_token
+ * 管理画面用 URL: http://sns.example.com/pc_backend.php/access_token
+
+このアプリケーションは認可済みのリクエストトークンと確認用コードを持っています。ですので、リクエストトークンとアクセストークンの交換をおこなうことができます。アクセストークンはユーザのデータにアクセスするのに使われます。
+
+サンプルリクエスト
+------------------
+
+::
+
+  http://sns.example.com/oauth/access_token?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+
+リクエストパラメータ
+--------------------
+
+  oauth_consumer_key:
+    コンシューマキー
+
+  oauth_nonce:
+    ランダムな文字列
+
+  oauth_signature_method:
+    署名リクエストに用いる署名方式。これは「HMAC-SHA1」である必要があります。
+
+  oauth_signature:
+    署名文字列
+
+  oauth_timestamp:
+    1970年1月1日 00:00:00 (GMT) からの通算秒を表すタイムスタンプ
+
+  oauth_verifier:
+    確認用コード
+
+  oauth_version:
+    OAuth の仕様のバージョン。これは「1.0」です。
+
+  oauth_token:
+    リクエストトークンの値
+
+サンプルレスポンス
+------------------
+
+::
+
+  oauth_token=tOkEn
+  &oauth_token_secret=sEcReT
+
+レスポンスパラメータ
+--------------------
+
+  oauth_token:
+    アクセストークン
+
+  oauth_token_secret:
+    アクセストークンのトークンシークレット
+
+5. ユーザのデータにアクセスする
+===============================
+
+アプリケーションはアクセストークンを所有しました。これでトークンを使ってユーザのデータにアクセスすることができます。
+
+アクセストークンを使う方法は二種類あります。
+
+単純な方法として、アクセストークンと OAuth のパラメータを API の URL へのリクエストパラメータとして含めるというものがあります。
+
+サンプルリクエスト
+------------------
+
+::
+
+  http://sns.example.com/api.php/feeds/member/1?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+
+API が OpenPNE Web API と酷似しており、 XML や何かがリクエスト本文として含まれる場合、この方法は GET の場合にしか使用できません。
+
+もう一つの方法として、必要なパラメータを Authorization リクエストヘッダーに含めるというものがあります。この方法はすべての種類のリクエストにおいて有用です。
+
+サンプルリクエストヘッダー
+--------------------------
+
+::
+
+  Authorization: oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+

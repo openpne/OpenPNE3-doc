@@ -1,0 +1,272 @@
+===================================================
+Guide for Creating Application Using OpenPNE3 OAuth
+===================================================
+
+Overview
+========
+
+What is OAuth? What is OAuth for?
+---------------------------------
+
+Most of data in the SNS are protected for privacy reason. It means that you must be authenticated to handle the data even if you access via APIs.
+
+If you want to use a good external tool, that enhances convenient of the SNS, that tool must break an authentication. How does it do that?
+
+There is an old way to realize it. That is an AWFUL way; that external tool requires to share an account and a password that are belong to you.
+
+Now, there is a good way. That way doesn't use password. It uses a token that is not related a user account, and the token can be invalidated any time. This way is called as "OAuth". OAuth is more secure than sharing passwords.
+
+This document explains about creating application that uses OAuth in OpenPNE3.
+
+And if you want to get more informations about OAuth, please visit http://oauth.net/core/1.0a .
+
+Authorization and Authentication
+--------------------------------
+
+In OAuth, "Authorization" and "Authentication" are very clearly marked.
+
+"Authentication" means that an end user is identified with some sort of ID and password.
+
+"Authorization" means that authenticated user allow a third party application to do something.
+
+OAuth Workflow
+--------------
+
+.. image:: OAuth_flow_en.png
+
+Two Kinds of Access Token
+-------------------------
+
+OpenPNE uses 2 kinds of access token; "member access token" and "admin access token".
+
+A member access token is generated in frontend. This token enables to access the member related data.
+
+An admin access token is generated in backend. This token enables to access all of SNS data.
+
+0. Register the Application
+===========================
+
+If you want to develop an application that uses OAuth of the SNS, you must register this application information.
+
+This is an easy. You just vist http://sns.example.com/connection/new (for member) or http://sns.example.com/pc_backend.php/connection/new (for admin)  of the SNS, and you have to input some informations.
+
+Then, the application can be used in the SNS, and you can get the Consumer Key and Consumer Secret. These are used for identify the application. Don't you open to the public that.
+
+1. Get a Request Token
+======================
+
+ * URL for backend related application: http://sns.example.com/oauth/request_token
+ * URL for frontend related application: http://sns.example.com/pc_backend.php/request_token
+
+A request must contain Consumer Key to get a request token. Request token is a temporaly token for using to start authorizing.
+
+Sample Request
+--------------
+
+::
+
+  http://sns.example.com/oauth/request_token?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_version=1.0
+  &oauth_callback=http%3A%2F%2Fexternal.example.com%2F
+
+Request Parameter
+-----------------
+
+  oauth_consumer_key:
+    The Consumer Key that is a value used by the application to identify itself to the SNS.
+
+  oauth_nonce:
+    A random string.
+
+  oauth_signature_method:
+    The signature method the appliction used to sign the request. This must be "HMAC-SHA1".
+
+  oauth_signature:
+    A signature string.
+
+  oauth_timestamp:
+    A timestamp is expressed in the number of seconds since January 1, 1970 00:00:00 GMT.
+
+  oauth_version:
+    A version of OAuth protocol. This must be "1.0".
+
+  oauth_callback:
+    An absolute URL to the SNS will redirect the User back to the application after authorization. If this parameter value is "oob", the SNS doesn't redirect and display confirmation code to continue proccess in the appliction.
+
+Sample Response
+---------------
+
+::
+
+  oauth_token=tOkEn
+  &oauth_token_secret=sEcReT
+  &oauth_callback_confirmed=true
+
+Response Parameter
+------------------
+
+  oauth_token:
+    The Request Token. 
+
+  oauth_token_secret:
+    The Token Secret.
+
+  oauth_callback_confirmed:
+    A result of the SNS receiving the value of oauth_callback. It is always "true".
+
+2. Get an Authorization by End User
+===================================
+
+ * URL for backend related application: http://sns.example.com/oauth/authorize
+ * URL for frontend related application: http://sns.example.com/pc_backend.php/authorize
+
+The application must redirect end user to authorization page of the SNS. In authorization page, user can decide between allowing and rejecting to let handle his data.
+
+End user can know the application will access what are in his data.
+
+If end user allows, the request token (that is gotten in "1. Get a Request Token") gets authority of accessing a part of private data.
+
+Sample Request
+--------------
+
+::
+
+  http://sns.example.com/oauth/authorize?oauth_token=oAuThToKeN
+
+Request Parameter
+-----------------
+
+  oauth_token:
+    A value of the request token. This value is provided in a response of "1. Get a Request Token".
+
+3. End User is Back to Application
+==================================
+
+End user authorized, he will redirect to the application.
+
+His destination is a URL that is specified as "oauth_callback" request parameter of "1. Get a Request Token" phase.
+
+He redirects with the following request parameters.
+
+Request Parameter
+-----------------
+
+  oauth_token:
+    A value of the request token.
+
+  oauth_verifier:
+    A code for confirmation.
+
+If a value of the "oauth_callback" parameter is "oob", the SNS shows a short code to end user. It is used as "oauth_verifier". In this case, the application must lead end user to input that code to somewhere in the application.
+
+4. Get an Access Token
+======================
+
+ * URL for backend related application: http://sns.example.com/oauth/access_token
+ * URL for frontend related application: http://sns.example.com/pc_backend.php/access_token
+
+The application get an authorized request token and a confirmation code. Now, it can exchange the request token for an access token. Access token is used for accessing user data.
+
+Sample Request
+--------------
+
+::
+
+  http://sns.example.com/oauth/access_token?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+
+Request Parameter
+-----------------
+
+  oauth_consumer_key:
+    The Consumer Key.
+
+  oauth_nonce:
+    A random string.
+
+  oauth_signature_method:
+    The signature method the appliction used to sign the request. This must be "HMAC-SHA1".
+
+  oauth_signature:
+    A value of consumer secret.
+
+  oauth_timestamp:
+    A timestamp is expressed in the number of seconds since January 1, 1970 00:00:00 GMT.
+
+  oauth_verifier:
+    A code for confirmation.
+
+  oauth_version:
+    A version of OAuth protocol. This must be "1.0".
+
+  oauth_token:
+    A value of the request token.
+
+Sample Response
+---------------
+
+::
+
+  oauth_token=tOkEn
+  &oauth_token_secret=sEcReT
+
+Response Parameter
+------------------
+
+  oauth_token:
+    An access token.
+
+  oauth_token_secret:
+    An  secret of the access token.
+
+5. Access to User Data
+======================
+
+The application has access token, so it can access a user data by using access token.
+
+There are two ways to use access token.
+
+A simple way is specified access token and some oauth parameters as request parameter of a URL to an API.
+
+Sample Request
+--------------
+
+::
+
+  http://sns.example.com/api.php/feeds/member/1?oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+
+If an API is similar to OpenPNE Web API, that requires containing XML or something as request body, the above way is only for GET.
+
+Another way is some needed parameters that are contained of "Authroization" request header. This way is useful for all type request.
+
+Sample Request Header
+---------------------
+
+::
+
+  Authorization: oauth_consumer_key=oAuThCoNsUmErKeY
+  &oauth_nonce=aRaNdOmStRiNg
+  &oauth_signature_method=HMAC-SHA1
+  &oauth_signature=oAuThSiGnAtUrEtHaTiSsIgNeDbYhMaCsHa1
+  &oauth_timestamp=0123456789
+  &oauth_verifier=oAuThVeRiFiEr
+  &oauth_version=1.0
+  &oauth_token=oAuThToKeN
+
