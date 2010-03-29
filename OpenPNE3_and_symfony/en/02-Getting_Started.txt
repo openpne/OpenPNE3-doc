@@ -1,0 +1,40 @@
+===========================
+Chapter 2 - Getting Started
+===========================
+
+What is Symfony?
+================
+
+OpenPNE3 is based on symfony. So you need to know something about symfony.
+
+Symfony is a PHP web application framework.
+
+It has many features that are useful to build web application.
+
+Symfony is used by some large sites. For example, Delicious, Yahoo! Bookmarks, and Dailymotion. So symfony is created viewing a performance in large site.
+
+And, symfony has high-expandability.  Symfony has a great plugin system. Plugins can add many features to the framework by this system. Even if it is ORM.
+
+It's not an exaggeration to say that OpenPNE3 is based on expandability that is provided by symfony.
+
+Installing OpenPNE3
+===================
+
+Requirements for Running
+------------------------
+
+OpenPNE3 is based on symfony, and using Doctrine. So OpenPNE's requirements is affected by them.
+
+OpenPNE3 requires PHP 5.2.3+. And it is need to be enabled some PHP extensions, for example, mbstring, xml, pcre, pdo (and drivers for DBMSs).
+
+You can check some informations of your environment by typing the following commands::
+
+  $ php -v
+  $ php -m
+
+.. note::
+
+  If you want to know full informations about requirements, please see an install document that is in your OpenPNE3 directory.
+  
+  Because the detail of requirements may be changed by major releases.
+

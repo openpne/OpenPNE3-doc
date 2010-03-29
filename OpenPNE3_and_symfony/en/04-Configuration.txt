@@ -1,0 +1,101 @@
+=========================
+Chapter 4 - Configuration
+=========================
+
+symfony can use simple and powerful configuration system, and OpenPNE3 can use this too. 
+
+However, OpenPNE3 has some originality configuration file for enhancing the configuration.
+
+This section will explains you about symfony and OpenPNE3 configuration.
+
+If you want to get more information about symfony configuration, visit: http://www.symfony-project.org/reference/1_2/ . 
+
+
+Overview of the Configuration Files
+===================================
+
+There are the following configuration file in the *project/config* directory:
+
+ProjectConfiguration.class.php
+  This file most first include by any request or command, and configuration for OpenPNE3. You must keep this file to latest version.
+
+databases.yml
+  This file defined database connection setting. This is generated automatically by **openpne:install** task. In addition, you can configure sleve database connection by this file on the OpenPNE3.
+
+OpenPNE.yml
+  This is configuration for OpenPNE. If you want configuration of mail domain, color, session storage and etc, copy from *OpenPNE.yml.sample* and edit. When this file is not found, *ProjectConfiguration.class.php* read *OpenPNE.yml.sample* as configuration.
+
+mask.yml
+  This file is used for the data masking.
+
+Addition Configuration
+----------------------
+
+Plugins.yml
+  You can manage plugins instration by this file at the OpenPNE plugin synchronization.
+
+OpenPNE Configuration
+=====================
+
+Basic Configuration
+-------------------
+
+You must configure like the following, because CLI application use this URL::
+
+  base_url: "http://example.com"
+
+URL must NOT be '/' in the last character.
+
+Mail Configuration
+------------------
+
+You must configure of mail because the SNS/User send e-mail.
+
+Default Configuration::
+
+  mail_domain: "example.com"
+
+  is_mail_address_contain_hash: true
+
+  mail_address_hash_length: 12
+
+mail_domain
+  This domain to use for seindig e-mail from/to the SNS
+
+is_mail_address_contain_hash
+  If this parameter is true, hash is added to the e-mail address to post something to the SNS.
+
+mail_address_hash_length:
+  Length of e-mail address hash.
+
+Session Configuration
+---------------------
+
+Default Configuration::
+
+  session_storage:
+    name: "file"
+    options:
+
+Proxy Configuration
+-------------------
+
+::
+
+  http_proxy: ""
+
+
+Language Configuration
+----------------------
+
+::
+
+  supported_languages: ['en', 'ja_JP']
+
+
+OpenPNE Plugins Configuration
+=============================
+
+Data Masking
+============
+

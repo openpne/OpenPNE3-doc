@@ -1,0 +1,26 @@
+==========================
+Chapter 6 - Routing System
+==========================
+
+Introduction of Routing
+=======================
+
+Routing Configuration
+=====================
+
+You can configure routings in routing.yml. The file has much effect on an application, so it is in a config directory of an appliction::
+
+  # openpne rules
+  homepage:
+    url:   /
+      param: { module: member, action: home }
+      
+      member_index:
+        url:   /member
+          param: { module: member, action: home }
+  :
+  default:
+    url:   /:module/:action/*
+
+If you create an action and you don't configure routing, symfony uses "default" rule to run the action. It means that you don't have to configure routing. But you are recommended to configure it. Because routing system is so useful and a part of OpenPNE is depend on routing.
+

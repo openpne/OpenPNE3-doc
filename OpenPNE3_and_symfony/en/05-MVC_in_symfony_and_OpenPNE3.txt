@@ -1,0 +1,127 @@
+=======================================
+Chapter 5 - MVC in symfony and OpenPNE3
+=======================================
+
+Controller
+==========
+
+Symfony is realized Controller in MVC pattern by some components.
+
+This section will explains you about those components.
+
+Front Controllers
+-----------------
+
+Actions
+-------
+
+Creating Module
++++++++++++++++
+
+You can generate a module and an action skelton by the following command::
+
+  $ ./symfony generate:module pc_frontend example
+
+For a plugin module::
+
+  $ ./symfony opGenerate:module opExamplePlugin pc_frontend example
+
+You can get an action skelton for the example module of the ``pc_frontend`` application.
+
+The Action Class
+++++++++++++++++
+
+A generated action file is in the module's ``actions/`` directory. Its filename is ``actions.class.php``.
+
+This file contains a class that is named ``{module-name}Actions``. The action class has some methods that are related with an action. At first, the class has the ``executeIndex()`` method that is defined the ``index`` action::
+
+  class exampleActions extends sfActions
+  {
+    public function executeIndex()
+    {
+    }
+  }
+
+.. caution::
+
+  If you want to create a membership action, do not forget set configuration about security.
+
+  An initial setting, everyone can access to a baby action.
+
+
+Code Sharing with Other Applications
+++++++++++++++++++++++++++++++++++++
+
+OpenPNE has many applications : pc_frontend, pc_backend, mobile_frontend, api, mobile_mail_frontend ... You may want to share action classes with other application to decrease duplication codes. It is easier than you thought. Symfony is constructed by strictly following OOP rule (and OpenPNE also is so), so action class is a simple class. It means that you just have to create a base abstract class for many action classes stretching over application.
+
+Authentication
+--------------
+
+Action Security
++++++++++++++++
+
+As mentioned above, the actions are not protected from unknown user by default.
+
+You must create a configuration file to access control, but you may set your mind at ease, because it is very easy.
+
+You have to create a new ``config`` directory to a module, create a new ``security.yml`` file, and write a few configuration like the following sample::
+
+  all:
+    is_secure: on
+    credentials: SNSMember
+
+And you probably need to clear cache for enabling new configurations to work::
+
+  $ ./symfony cache:clear
+
+All done! You can check that your action is protected correctly.
+
+View
+====
+
+Templates
+---------
+
+Symfony doesn't provide template engine. A template in symfony is only pure PHP script.
+
+It is not surprising. PHP script can be embedded in HTML like template engines. And the template can use any PHP functions.
+
+Templates is in apps/pc_frontend/modules/example/templates directory.
+
+Variable from Action
+++++++++++++++++++++
+
+A template can use some variables that are defined in an action.
+
+Helpers
++++++++
+
+Parts Mechanism
++++++++++++++++
+
+"Parts" is a Japanese English. It means a part or a component.
+
+OpenPNE has some patterns of page components. You can create a page by matching some parts with another parts.
+
+OpenPNE provides a useful helpers to use parts.
+
+Do you want to use a simple box like the following image?
+
+[image]
+
+It is easy. You just write the following code::
+
+ <?php op_include_box('example', 'Thie is an information.', array('title' => 'Information',)); ?>
+
+The first argument is ID to specify page component. The second argument is a body of parts. The third argument is options.
+
+If you want to use long and complex text as body of parts? You can use slot::
+
+  <?php slot('body'); ?>
+  <p>Hi, <?php echo $yourName ?></p>
+  <p>This is an information for you!!</p>
+  <p>If you want to get more information, please visit <?php echo link_to('Detail Page', '@detail') ?>.</p>
+  <?php end_slot(); ?>
+  <?php op_include_box('example', get_slot('body'), array('title' => 'Information')); ?>
+
+

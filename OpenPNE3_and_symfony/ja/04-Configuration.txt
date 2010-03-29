@@ -1,0 +1,102 @@
+================
+Chapter 4 - 設定
+================
+
+symfonyではシンプルで強力な設定システムを利用することができ、OpenPNE3でもそれを利用することができます。
+
+しかしながら、設定を拡張するためにOpenPNEでは独自の設定ファイルが存在します。
+
+このセクションではsymfonyとOpenPNE3の設定について説明していきます。
+
+symfonyの設定について詳しく知りたいときは http://www.symfony-project.org/reference/1_2/ を訪れてみてください。
+
+設定ファイルの概要
+==================
+
+*project/config* ディレクトリ中には以下のような設定ファイルが存在します:
+
+ProjectConfiguration.class.php
+  このファイルはリクエストかコマンドのもっとも最初に読まれ、OpenPNE3に必要な設定を行っています。このファイルは最新の状態に維持する必要があります。
+
+databases.yml
+  このファイルはデータベース接続設定を宣言します。これは **openpne:install** タスクにより自動生成されます。さらに、OpenPNE3ではこのファイルでSleveデータベース接続設定を行うことができます。
+
+OpenPNE.yml
+  このファイルはOpenPNEを設定するものです。メールドメイン、セッションストレージなどを設定するときは、*OpenPNE.yml.sample* をコピーして編集してください。もし、このファイルが見つからないときは、 *ProjectConfiguration.class.php* は *OpenPNE.yml.sample* を設定ファイルとして読み込みます。
+
+mask.yml
+  このファイルはデータマスキングのために利用します。
+
+追加の構成
+----------
+
+Plugins.yml
+  このファイルにより、OpenPNEプラグイン同期の時のプラグインを管理することができます。
+  
+Plugins.yml
+  You can manage plugins instration by this file at the OpenPNE plugin synchronization.
+
+OpenPNEの構成
+=============
+
+基本構成
+--------
+
+CLIアプリケーションがSNSのURLを利用するため、以下のように設定する必要があります::
+
+  base_url: "http://example.com"
+
+URLは最後の文字に '/' を利用してはいけません。
+
+メール構成
+----------
+
+SNSかユーザがメールを送信するために、メール設定が必要です。
+
+デフォルトの構成::
+
+  mail_domain: "example.com"
+
+  is_mail_address_contain_hash: true
+
+  mail_address_hash_length: 12
+
+mail_domain
+  このドメインはSNSへ・からのメールに利用します。
+  
+is_mail_address_contain_hash
+  trueに設定すると、SNSに送信送信するためのメールアドレスにハッシュが付加されます。
+
+mail_address_hash_length:
+  ハッシュの長さ。
+
+セッションの構成
+----------------
+
+デフォルトの構成::
+
+  session_storage:
+    name: "file"
+    options:
+
+プロキシの構成
+--------------
+
+::
+
+  http_proxy: ""
+
+言語の構成
+----------
+
+::
+
+  supported_languages: ['en', 'ja_JP']
+
+
+OpenPNEプラグインの構成
+=======================
+
+データマスキング
+================
+
