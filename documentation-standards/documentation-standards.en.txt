@@ -1,0 +1,56 @@
+===============================
+OpenPNE3 Documentation Standard
+===============================
+
+Overview
+========
+
+This document provides guidelines for creation of OpenPNE3 documents.
+
+Documentation File Formatting
+=============================
+
+General
+-------
+
+Documents must be written by reStructuredText format.
+
+Describing the reStructuredText format is beyond the scope of this document. For more information, visit: http://docutils.sourceforge.net/rst.html
+
+Document Title
+--------------
+
+Document Title is described by overlines and underlines that are constructed by "=" character.
+
+Here is a sample::
+
+  ======================
+  This is Document Title
+  ======================
+
+Sections
+--------
+
+Section headers are described by underlines.
+
+A character that should use as underline is changed by section-level.
+
+ * `=` for sections
+ * `+` for subsections
+ * `-` for subsubsections
+
+Lists
+-----
+
+Bulleted lists are described by asterisk::
+
+  * This is a balleted list item
+
+Numbered lists are described by integral numbers::
+
+ 1. This is a first numbered list item
+ 2. This is a second numbered list item
+
+
+
+
