@@ -1,0 +1,115 @@
+The way to release OpenPNE3
+===========================
+
+About
+-----
+
+This is a procedure manual for releasing OpenPNE3.
+
+Create the bandled plugins list
+-------------------------------
+
+Check out the bandled-plugins-list directory::
+
+  $ svn co https://trac.openpne.jp/svn/OpenPNE3/bandled-plugins-list/
+
+Create the list for this version of OpenPNE::
+
+  $ svn copy bandled-plugins-list/$VERSION-dev.yml bandled-plugins-list/$VERSION.yml
+  $ vi bandled-plugins-list/$VERSION.yml
+  $ svn ci -m "added the bandled plugins list for ${VERSION}" bandled-plugins-list
+  $ svn copy bandled-plugins-list/$VERSION.yml bandled-plugins-list/$NEXT_VERSION-dev.yml
+  $ svn ci -m "added the bandled plugins list for development of ${NEXT_VERSION}" bandled-plugins-list
+
+Update the list in the plugin channel server::
+
+  $ ssh $PLUGIN_CHANNEL_SERVER_HOST_NAME
+  $ cd /path/to/web/directory
+  $ svn up packages
+
+Updated version definition file
+--------------------------------
+
+Modify the data/version.php::
+
+  $ perl -pi -e 's/\-dev//g' /path/to/OpenPNE3/trunk-or-stable-branch/data/version.php
+  $ svn ci
+
+Tagging
+-------
+
+Execute the following command::
+
+  $ svn copy -m "release OpenPNE${VERSION}" https://trac.openpne.jp/svn/OpenPNE3/trunk https://trac.openpne.jp/svn/OpenPNE3/tags/OpenPNE-$VERSION
+
+Updated version definition file to develop
+------------------------------------------
+
+Modify the data/version.php::
+
+  $ perl -pi -e 's/${VERSION}/${NEXT_VERSION}-dev/g' /path/to/OpenPNE3/trunk-or-stable-branch/data/version.php
+  $ svn ci
+
+
+Change some properties of the tag
+---------------------------------
+
+Check out the tag::
+
+  $ cd /tmp
+  $ svn co https://trac.openpne.jp/svn/OpenPNE3/tags/OpenPNE-$VERSION tmpDirToChangeSomeProperties
+
+And change the svn:externals property of the doc directory::
+
+  $ svn copy -m "tagged documentaion for ${VERSION}" https://trac.openpne.jp/svn/OpenPNE3/doc/branches/3.0/OpenPNE3_Setup_Guide/ https://trac.openpne.jp/svn/OpenPNE3/doc/tags/$VERSION/
+  $ svn ps svn:externals "doc https://trac.openpne.jp/svn/OpenPNE3/doc/tags/${VERSION}/" tmpDirToChangeSomeProperties
+  $ svn ci -m "changed externals to doc" tmpDirToChangeSomeProperties
+
+Prepared the packaged version
+-----------------------------
+
+Export symfony::
+
+  $ svn export http://svn.symfony-project.com/tags/RELEASE_1_2_5 symfony
+
+Export the tag::
+
+  $ svn export https://trac.openpne.jp/svn/OpenPNE3/tags/OpenPNE-$VERSION/
+
+Rename `config/*.sample. to config/*.*`::
+
+  $ cd OpenPNE-$VERSION
+  $ ls config/*.sample | sed -e 's/\.sample$//g' | awk '{print "mv "$1".sample "$1}' | sh
+
+Edit config/ProjectConfiguration.class.php::
+
+  $ vi config/ProjectConfiguration.class.php
+
+And replace ##SYMFONY_LIB_DIR##. ##SYMFONY_LIB_DIR## must be a path for the libraries of symfony. (e.g. /usr/share/php/data/symfony)
+
+::
+
+  require_once '##SYMFONY_LIB_DIR##/autoload/sfCoreAutoload.class.php';
+
+Remove the development front controllers::
+
+  $ ./symfony project:clear-controllers
+
+Do freeze
+---------
+
+Execute the following command (##SYMFONY_DATA_DIR## must be the path for your symfony data directory)::
+
+  $ ./symfony project:freeze  ##SYMFONY_DATA_DIR##
+
+Create a zip archive::
+
+  $ cd -
+  $ zip -r OpenPNE-$VERSION.zip OpenPNE-$VERSION
+
+Upload
+------
+
+Upload the archive to sourceforge::
+
+  $ echo "put OpenPNE-$VERSION.zip" | sftp jsmith@frs.sourceforge.net:uploads
