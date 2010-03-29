@@ -1,0 +1,250 @@
+OpenPNE3.2 セットアップ手順
+===========================
+
+はじめに
+--------
+
+このドキュメントは、 OpenPNE バージョン 3.2 を基にして書かれています。
+
+OpenPNE3 は以下のようなサーバ環境で動作させることを想定しています。
+
+Webサーバ
+  Apache 
+    * mod_rewrite を使用可能
+PHP
+  PHP5.2.3 以降
+    * PHP の mbstring 拡張モジュールを使用可能
+    * PHP の XML 拡張モジュールを使用可能
+    * PHP の PCRE 拡張モジュールを使用可能 (UTF-8 サポート)
+    * PHP の PDO 拡張モジュールを使用可能 (利用する DBMS のドライバも含む)
+    * PHP の JSON 拡張モジュールを使用可能
+    * PHP から GD ライブラリを使用可能 (JPEG/GIF/PNG サポート)
+    * PHP の mcrypt 拡張モジュールの使用を推奨
+    * PHP の APC 拡張モジュールの使用を推奨
+データベースサーバ
+  MySQL4.1以降（5.1 以降を推奨）
+  
+  PostgreSQL, SQLite は現時点で未サポート（将来的にサポート予定）
+
+※ OpenPNE 3.2 は、セットアップ時に指定されたデータベースを削除し、作り直します。かならず専用のデータベースを用意してセットアップを実施してください。
+
+パッケージをダウンロードして利用する
+------------------------------------
+
+ダウンロード
+~~~~~~~~~~~~
+
+以下の URL から OpenPNE 3.2 のパッケージをダウンロードしてください。
+
+http://github.com/openpne/OpenPNE3/downloads
+
+その後、 ZIP アーカイブを解凍してください。
+
+ファイルの設置
+~~~~~~~~~~~~~~
+
+以下のような構造になるようにサーバ上にファイルを設置してください。
+
+::
+
+  ./
+  +-- LICENSE
+  +-- NOTICE
+  +-- apps/
+  +-- cache/
+  +-- config/
+  +-- data/
+  +-- doc/
+  +-- lib/
+  +-- log/
+  +-- plugins/
+  +-- symfony
+  +-- test/
+  
+  (ブラウザから閲覧可能)
+  +-- web/  (ディレクトリ名は変更可能)
+      +-- index.php
+      +-- js/
+      +-- mobile_frontend.php
+      +-- pc_backend.php
+        :
+
+HTTP プロキシの設定
+~~~~~~~~~~~~~~~~~~~
+
+HTTP プロキシを利用する場合、 config/ProjectConfiguration.class.php の op_http_proxy の設定を以下の例を参考に変更してください。
+
+::
+
+  //HTTP proxy to use when downloading plugin packages
+  sfConfig::set('op_http_proxy', 'example.com:8080');
+
+インストールコマンドの実行
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+以下のコマンドを実行し、インストール作業をおこなってください。
+
+::
+
+  $ ./symfony openpne:install
+ 
+コマンドを実行すると、はじめに、以下の事項の入力を求められます。
+
+*  使用する DBMS （mysql, pgsql, sqlite から選択。ただし mysql 以外は未サポート）
+*  データベース名
+*  データベースへの接続用ユーザ名
+*  データベースへの接続用パスワード（未入力可）
+*  データベースサーバのホスト名（localhost など）
+*  データベースサーバのポート番号（未入力可）
+* （DBMS に MySQL を選択し、サーバホスト名に localhost を指定した場合）使用するソケットへのパス（未入力可）
+
+以上の事項について入力をおこなうと、インストール作業が自動でおこなわれます。
+
+mod_rewrite の設定
+~~~~~~~~~~~~~~~~~~
+
+web/.htaccess の RewriteBase を各自の環境にあわせて編集してください（必要でない場合もあります）。
+
+::
+
+  RewriteBase /                            # もしくは /web など
+
+※RewriteBase には URL の絶対パスを指定してください。
+
+インストール
+~~~~~~~~~~~~
+
+以下のコマンドを実行（DSNなどは各自適切なものに変更）
+
+::
+
+  $ ./symfony openpne:install
+
+メールの設定
+~~~~~~~~~~~~
+
+メールを配信するための設定をおこないます。メールの配信をおこなわない場合はスキップして構いません。
+
+設定例
+++++++
+
+cron ファイルに設定権限を付加します。
+
+::
+
+  $ chmod -R 0755 bin/*.cron
+
+/etc/crontab に以下を記述します。
+
+::
+
+  # 6 時に /path/to/OpenPNE3/bin/send_daily_news.cron というスクリプトを /path/to/php で実行することで /path/to/OpenPNE3 のデイリー・ニュースを配信する
+  00   6 * * * root sh /path/to/OpenPNE3/bin/send_daily_news.cron     /path/to/OpenPNE3 /path/to/php
+  
+  # 6 時に /path/to/OpenPNE3/bin/birthday_mail.cron というスクリプトを /path/to/php で実行することで /path/to/OpenPNE3 の誕生日通知メールを配信する
+  00   6 * * * root sh /path/to/OpenPNE3/bin/birthday_mail.cron     /path/to/OpenPNE3 /path/to/php
+
+なお、デイリー・ニュースはデフォルトの状態ではコンテンツがありません。
+
+管理画面のガジェット設定から、デイリー・ニュースに対応したプラグインが提供するコンテンツを選択して使用してください。
+
+ブラウザからアクセス(PC)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+(1) http://example.com/index.php にアクセス
+(2) ログインフォームに sns@example.com / password と入力し、ログインできるかどうか確認
+
+※メールアドレスとパスワードはログイン後に必ず変更してください
+
+ブラウザからアクセス(管理画面)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(1) http://example.com/pc_backend.php にアクセス
+(2) ログインフォームに admin / password と入力し、ログインできるかどうか確認 
+
+※メールアドレスとパスワードはログイン後に必ず変更してください
+
+Git から入手してセットアップする
+--------------------------------
+
+OpenPNE3 をクローンし、使用したいバージョンをチェックアウトする
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OpenPNE3 のクローンはデフォルトでは master ブランチを使用する状態になっています。
+
+master ブランチは主に開発版の開発に使われるバージョンです。
+
+OpenPNE3 の特定のバージョンを使いたい場合は、以下のようにして、クローンした後にタグをチェックアウトしてください。
+
+::
+
+  $ git clone git://github.com/openpne/OpenPNE3.github
+  $ git checkout OpenPNE-3.2RC1
+
+config/ProjectConfiguration.class.php をコピー
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+  $ cd OpenPNE3
+  $ cp config/ProjectConfiguration.class.php.sample config/ProjectConfiguration.class.php
+
+HTTP プロキシの設定
+~~~~~~~~~~~~~~~~~~~
+
+HTTP プロキシを利用する場合、 config/ProjectConfiguration.class.php の op_http_proxy の設定を以下の例を参考に変更してください。
+
+::
+
+  //HTTP proxy to use when downloading plugin packages
+  sfConfig::set('op_http_proxy', 'example.com:8080');
+
+インストール
+~~~~~~~~~~~~
+
+以下のコマンドを実行（DSNなどは各自適切なものに変更）
+
+::
+
+  $ ./symfony openpne:install
+
+メールの設定
+~~~~~~~~~~~~
+
+メールを配信するための設定をおこないます。メールの配信をおこなわない場合はスキップして構いません。
+
+設定例
+++++++
+
+cron ファイルに設定権限を付加します。
+
+::
+
+  $ chmod -R 0755 bin/*.cron
+
+/etc/crontab に以下を記述します。
+
+::
+
+  # 6 時に /path/to/OpenPNE3/bin/send_daily_news.cron というスクリプトを /path/to/php で実行することで /path/to/OpenPNE3 のデイリー・ニュースを配信する
+  00   6 * * * root sh /path/to/OpenPNE3/bin/send_daily_news.cron     /path/to/OpenPNE3 /path/to/php
+  
+  # 6 時に /path/to/OpenPNE3/bin/birthday_mail.cron というスクリプトを /path/to/php で実行することで /path/to/OpenPNE3 の誕生日通知メールを配信する
+  00   6 * * * root sh /path/to/OpenPNE3/bin/birthday_mail.cron     /path/to/OpenPNE3 /path/to/php
+
+なお、デイリー・ニュースはデフォルトの状態ではコンテンツがありません。
+
+管理画面のガジェット設定から、デイリー・ニュースに対応したプラグインが提供するコンテンツを選択して使用してください。
+
+ブラウザからアクセス(PC)
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+(1) http://example.com/pc_frontend_dev.php にアクセス
+(2) ログインフォームに sns@example.com / password と入力し、ログインできるかどうか確認
+
+ブラウザからアクセス(管理画面)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(1) http://example.com/pc_backend_dev.php にアクセス
+(2) ログインフォームに admin / password と入力し、ログインできるかどうか確認 
+
