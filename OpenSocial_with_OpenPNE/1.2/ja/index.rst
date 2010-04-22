@@ -18,4 +18,5 @@ OpenSocial with OpenPNE
    docs/signature
    docs/javascript_api
    docs/restful_api
+   docs/lifecycle_event
    docs/mobile

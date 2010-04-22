@@ -1,8 +1,10 @@
+.. _restful_api:
+
 ===========
 RESTful API
 ===========
 
-マッシュアップサイト作成のための、リソースアクセスの手段として `OpenSocial RESTful API`_ を利用する手段があるでしょう。
+マッシュアップサイト作成や、モバイル用のリソースアクセスの手段として `OpenSocial RESTful API`_ を利用するという手段があるでしょう。
 
 この章ではOpenSocial RESTful APIについて解説します。
 
@@ -89,7 +91,7 @@ GET http://sns.example.com/api.php/social/rest/people/@me/@self?fields=birthday,
     }
   }
 
-パラメータとして fields に、コンマ区切りで取得したいプロフィール項目を指定することにより、そのプロフィール情報も取得できます。OpenPNE3.2-RC1 + opOpenSocialPlugin0.9.3 の初期状態では、 aboutMe, addresses, age, birthday, languagesSpoken, gender といった項目に対応されています。
+パラメータとして fields に、コンマ区切りで取得したいプロフィール項目を指定することにより、そのプロフィール情報も取得できます。OpenPNE3.4<= + opOpenSocialPlugin1.2 の初期状態では、 aboutMe, addresses, age, birthday, languagesSpoken, gender といった項目に対応されています。
 
 また、結果が複数件存在する場合は以下のようになります。(@meのフレンドを取得します。フレンドがAとBの2人存在する場合です。)
 

@@ -57,7 +57,8 @@ Shindig-1.1-BETA5を利用する場合、Subversionにて http://svn.apache.org/
 OpenPNEの設定
 -------------
 
-*openpne.js*
+openpne.js
+~~~~~~~~~~
 
 OpenPNEの管理画面から、プラグイン設定 > opOpenSocialPluginの設定 > コンテナ設定 にアクセスします。
 
@@ -67,7 +68,8 @@ OpenPNEの管理画面から、プラグイン設定 > opOpenSocialPluginの設�
 
 このファイルは、利用できるプロフィール項目の情報を含むためプロフィールを追加、削除した場合は再度上書きするようにしてください。
 
-*OpenPNEService.php*
+OpenPNEService.php
+~~~~~~~~~~~~~~~~~~
 
 OpenPNEのディレクトリ中の、 *plugins/opOpenSocialPlugin/lib_for_shindig/OpenPNEService.php.sample* を、 *OpenPNEService.php* という名前でコピーしてShindigがロードできる場所に設置してください。
 
