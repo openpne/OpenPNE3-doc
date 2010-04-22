@@ -19,7 +19,7 @@ opOpenSocialPluginはOpenPNE3上で、OpenSocialのAPI、ガジェットアプ�
 
 opOpenSocialPlugin1.2.x（開発版は1.1.x)では以下の機能をサポートしています。
 
-* 利用可能API
+* 利用可能API (OpenSocial **0.9** 準拠)
     * Person API
     * Activity API
     * Persistence API
@@ -29,6 +29,7 @@ opOpenSocialPlugin1.2.x（開発版は1.1.x)では以下の機能をサポート
 * 携帯アプリ機能
 
 開発は http://github.com/kawahara/opOpenSocialPlugin で行われています。fork, pull request は大歓迎です。
+
 
 表記について
 ============
