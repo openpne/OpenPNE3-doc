@@ -4,11 +4,23 @@
 RESTful API
 ===========
 
-マッシュアップサイト作成や、モバイルアプリ用のリソースアクセスの手段として `OpenSocial RESTful API`_ を利用するという手段があるでしょう。
+マッシュアップサイト作成や、モバイルアプリ用のリソースアクセスの手段として OpenSocial RESTful API を利用するという手段があるでしょう。
 
 この章ではOpenSocial RESTful APIについて解説します。
 
-.. _`OpenSocial RESTful API`: http://www.opensocial.org/Technical-Resources/opensocial-spec-v09/REST-API.html
+About RESTful API
+=================
+
+RESTful APIは `OpenSocial RESTful Protocol Specification v0.9`_ を基準にしています。
+
+.. _`OpenSocial RESTful Protocol Specification v0.9`: http://www.opensocial.org/Technical-Resources/opensocial-spec-v09/REST-API.html
+
+エンドポイント
+==============
+
+RESTful APIのエンドポイントは以下になります::
+
+  http://sns.example.com/api.php/social/rest
 
 OAuth
 =====
@@ -29,14 +41,24 @@ OpenPNE上のOAuth認可については、 http://sandbox.ebihara.dazai.pne.jp/o
 
 .. _`2-legged OAuth`: http://oauth.googlecode.com/svn/spec/ext/consumer_request/1.0/drafts/1/spec.html
 
+レスポンスのフォーマット
+========================
+
+レスポンスの形式は、JSON・XML・ATOMに対応しています。それぞれリクエストのformatパラメータに、json, xml, atomを設定することにより形式を切り替えることができます。指定しない場合はJSONになります。
 
 メンバー情報の取得
 ==================
 
-エントリポイント
+対応URI Fragment
 ----------------
 
-  GET http://sns.example.com/api.php/social/rest/people/\ *userId*\ /\ *selector*
+::
+
+  GET /people/{guid}/@self
+  GET /people/{guid}/@friends
+
+*{guid}* はメンバーIDか、 @me を指定することができます。
+  GET http://sns.example.com/api.php/social/rest/people/\ *{guid}*\ /\ *{selector}*
 
 例
 --
@@ -47,6 +69,7 @@ GET http://sns.example.com/api.php/social/rest/people/@me/@self ::
     "entry": {
     "isOwner":true,
     "isViewer":true,
+    "hasApp":true,
     "id":"1",
     "displayName": "OpenPNE\u541b",
     "thumbnailUrl":"http:\/\/sns.example.com\/cache\/img\/jpg\/w_h\/m_1_70481ff86b46bdb146bc78781a4c2a2d9a1581f6_jpg.jpg",
@@ -54,76 +77,47 @@ GET http://sns.example.com/api.php/social/rest/people/@me/@self ::
     }
   }
 
-*@me* は *userId* に自分のIDを指定した場合と同様です。 *@self* は *userId* で指定したメンバー自身の情報ということになります。 *selector* を *@friend* とすると指定メンバーのフレンド情報を取得します。
+取得可能フィールド
+------------------
 
-パラメータとして、何も指定しない場合は、JSON形式でデータが返されます。
+必須
+~~~~
 
-GET http://sns.example.com/api.php/social/rest/people/@me/@self?format=xml ::
+id
+  メンバーID
+isOwner
+  アプリ所有者であればtrue
+isViewer
+  閲覧者であればtrue
+hasApp
+  アプリを所有していればtrue
+displayName
+  表示名(ニックネーム)
+thumbnailUrl
+  プロフィール画像URL
+profileUrl
+  プロフィールURL
 
-  <?xml version="1.0" encoding="UTF-8"?>
-  <response>
-    <entry>
-      <id>1</id>
-      <isOwner>1</isOwner>
-      <isViewer>1</isViewer>
-      <displayName>OpenPNE君</displayName>
-      <thumbnailUrl>http://sns.example.com/cache/img/jpg/w_h/m_1_70481ff86b46bdb146bc78781a4c2a2d9a1581f6_jpg.jpg</thumbnailUrl>
-      <profileUrl>http://sns.example.com/member/1</profileUrl>
-    </entry>
-  </response>
+オプション
+~~~~~~~~~~
 
-パラメータとして format を xml に指定することにより、XML形式でのデータの取得も可能です。ほかにも、atom を指定することにより ATOM形式によるデータの取得ができます。
-これ以降で紹介する、レスポンスのあるリクエストでは同様にformatを指定することができます。
+aboutMe
+  自己紹介
+addresses
+  住所 (県名)
+age
+  年齢
+birthday
+  誕生日
+languagesSpoken
+  言語
+gender
+  性別
 
-GET http://sns.example.com/api.php/social/rest/people/@me/@self?fields=birthday,age,languagesSpoken ::
 
-  {
-    "entry": {
-      "id":"1",
-      "isOwner":true,
-      "isViewer":true,
-      "displayName":"OpenPNE\u541b",
-      "thumbnailUrl":"http:\/\/sns.example.com\/cache\/img\/jpg\/w_h\/m_1_70481ff86b46bdb146bc78781a4c2a2d9a1581f6_jpg.jpg",
-      "profileUrl":"http:\/\/sns.example.com\/member\/1"
-      "age":21,
-      "birthday":"1988\/04\/23",
-      "languagesSpoken":"ja"
-    }
-  }
+上記のオプションは、OpenPNE3.4 + opOpenSocialPlugin1.2.x のセットアップ直後に利用可能な項目です。
 
-パラメータとして fields に、コンマ区切りで取得したいプロフィール項目を指定することにより、そのプロフィール情報も取得できます。OpenPNE3.4<= + opOpenSocialPlugin1.2 の初期状態では、 aboutMe, addresses, age, birthday, languagesSpoken, gender といった項目に対応されています。
-
-また、結果が複数件存在する場合は以下のようになります。(@meのフレンドを取得します。フレンドがAとBの2人存在する場合です。)
-
-GET http://sns.example.com/api.php/social/rest/people/@me/@friend ::
-
-  {
-    "entry": [
-      {
-        "id":"2",
-        "isOwner":false,
-        "isViewer":false,
-        "displayName":"A",
-        "thumbnailUrl":"",
-        "profileUrl":"http:\/\/sns.example.com\/member\/2"
-      },
-      {
-        "id":"3",
-        "isOwner":false,
-        "isViewer":false,
-        "displayName":"B",
-        "thumbnailUrl":"",
-        "profileUrl":"http:\/\/sns.example.com\/member\/3"
-      }
-    ],
-    "startIndex":0,
-    "totalResults":2,
-    "itemsPerPage":20
-  }
-
-このように結果が、リストになります。デフォルトでは一度に２０件のデータが取得可能です。開始インデックスは、パラメータとしてstartIndexに数値を指定することにより変更が可能です。
-
-アプリ所有者限定の一覧を取得したい場合は、filterByパラメータにhasAppを指定して下さい。(**アプリごとに発行したコンシューマキーを利用してAPIアクセスを必要があります。**)
+必須情報意外の情報を取得する場合は、fields パラメータに項目名をカンマ区切りで指定してください。
 
 アクティビティ
 ==============
@@ -131,17 +125,14 @@ GET http://sns.example.com/api.php/social/rest/people/@me/@friend ::
 アプリの活動状況等を共有する仕組みとしてアクティビティが存在します。
 
 
-エントリポイント
+対応URL Fragment
 ----------------
 
-アクティビティの投稿
+::
 
-  POST http://sns.example.com/api.php/social/rest/activities/@me/@self
-
-アクティビティの取得
-
-  GET http://sns.example.com/api.php/social/rest/activities/\ *userId*\ / *selector* \/ *appId*
-
+  POST /activities/@me/@self
+  GET /activities/{guid}/{selecter}
+  GET /activities/{guid}/{selecter}/{appid}
 
 例
 --
@@ -221,20 +212,14 @@ GET http://sns.example.com/api.php/social/rest/activities/@me/@self/@app::
 
 **この機能は、アプリごとに発行したコンシューマキーを利用してAPIアクセスをする必要があります。**
 
-エントリポイント
+対応URL Fragment
 ----------------
 
-永続データの作成・更新
+::
 
-  POST http://sns.example.com/api.php/social/rest/appdata/@me/@self/@app
-
-永続データの取得
-
-  GET http://sns.example.com/api.php/social/rest/appdata/\ *userId*\ / *selecter* \/@app
-
-永続データの削除
-
-  DELETE http://sns.example.com/api.php/social/rest/appdata/@me/@self/@app
+  POST /appdata/@me/@self/@app
+  GET /appdata/{guid}/{selector}/@app
+  DELETE /appdata/@me/@self/@app
 
 例
 --
@@ -283,16 +268,13 @@ fieldsパラメータが存在しない場合は、そのメンバーのアプ�
 
 opOpenSocialPluginでは、opAlbumPluginと連動してアルバムの情報を取得することができます。opAlbumPluginが導入されていない場合はこの機能は利用できません。
 
-エントリポイント
+対応URL Fragment
 ----------------
 
-アルバム情報の取得
+::
 
-  GET http://sns.example.com/api.php/social/rest/albums/\ *userId*\ /\ *selector*
-
-アルバム内容の取得
-
-  GET http://sns.example.com/api.php/social/rest/mediaitems/\ *userId*\ /\ *selector*\ /\ *albumId*
+  GET /albums/{guid}/{selector}
+  GET /mediaitems/{guid}/{selector}/{albumId}
 
 例
 --

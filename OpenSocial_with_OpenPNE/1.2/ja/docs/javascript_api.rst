@@ -1,42 +1,6 @@
-======================
-GadgetとJavaScript API
-======================
-
-SNS上でOpenSocialアプリケーションを実現したい場合は、Gadgetを開発します。Gadgetはメタ情報とコンテンツ（JavaScriptやHTML）を記述Gadget XMLファイルによって実現します。
-
-Gadget中では、OpenSocial JavaScript APIを利用することにより、SNS上のメンバー・フレンド情報などを取得することができ、それに基づいたソーシャルアプリケーションを開発することができます。
-
-この章では、GadgetとJavaScript APIについて解説します。
-
-
-基本構造とアプリの追加
-======================
-
-もっとも単純なGadget XMLは以下のようになります。
-
-Gadget XML::
-
-  <?xml version="1.0" encoding="UTF-8"?>
-  <Module>
-    <ModulePrefs title="Test Application">
-      <Require feature="opensocial-0.8" />
-    </ModulePrefs>
-    <Content type="html">
-    <![CDATA[
-    こんにちは！
-    ]]>
-    </Content>
-  </Module>
-
-このファイルを、SNS上から読み取れるサーバ上から読み取れるようにします。OpenPNEの管理画面から、プラグイン設定 > opOpenSocialPluginの設定 > アプリ追加 にアクセスし、XMLファイルのURLを指定し、アプリを追加します。
-
-アプリの追加に成功すると、アプリの情報画面が表示されます。
-
-この画面からは、アプリを強制的に更新したり、削除することができます。
-
-
-SNSメンバーは、アプリ > アプリギャラリー から、このアプリを追加することができます。
-
+==============
+JavaScript API
+==============
 
 OWNER と VIEWER
 ===============
@@ -121,12 +85,10 @@ Gadget中でのメンバーの情報の取得は次のようになります。
     + viewer.getField(opensocial.Person.Field.AGE)
     + "歳です。";
 
-    document.getElementById("console").innerHTML = html;  
+    document.getElementById("console").innerHTML = html;
   }
 
 プロフィールのフィールド名は、 opensocial.Person.Field_ を参考にしてください。
-
-OpenPNE3.2-RC1 + opOpenSocialPlugin0.9.3の初期状態では、ニックネーム・サムネイルURL・プロフィールURLに加えて自己紹介・年齢・誕生日・住所（県のみ）を取得の取得が可能です。この項目は、OpenPNEのプリセットプロフィール項目に連動します。
 
 また、もしSNSがサポートしているプロフィール項目を調べたい場合は、 `opensocial.Environment.supportsField()`_ を利用してください。
 
