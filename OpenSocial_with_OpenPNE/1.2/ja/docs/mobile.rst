@@ -189,23 +189,28 @@ FORMでも同様のURL指定を行って下さい。
 出力時に適切なURLに置き換えられます。
 
 GPS::
+
   location:gps?callback=#URL#
 
 簡易位置情報::
+
   location:cell?callback=#URL#
 
 指定できるパラメータ
 
 callback::
+
   位置情報取得後に遷移するURLを指定する。省略可能。省略時はスタートURLが使われる。
 
 なお、a要素のhref属性や、form要素のaction属性にパラメータを含める場合には、パラメータの値はRFC3986形式でURLエンコードを施す必要があります。
 以下に記述例を示します。
 
 GET::
+
   <a href="location:gps?callback=http%3A%2F%2Fexample.com%2Fsample.php">位置情報を取得する</a>
 
 POST::
+
   <form action="location:gps" method="post">
   <input type="hidden" name="callback" value="http://example.com/sample.php">
   <input type="submit" value="位置情報を取得する">
@@ -216,9 +221,11 @@ POST::
 取得できるパラメータ
 
 datum::
+
   取得した位置情報の測地系。世界測地系1984を用いるため、常に wgs84 （世界測地系1984であることを示す値）が返る。
 
 lat::
+
   緯度。フォーマットはdmsで±AA.BB.CC.DDの形式。例: +34.44.36.02
   符号が + であれば北緯、- であれば南緯を表します。
   AA: 度 00～90
@@ -227,6 +234,7 @@ lat::
   DD: (1/100)秒 00～99
 
 lon::
+
   経度。フォーマットはdmsで±AAA.BB.CC.DDの形式。例: +135.26.44.35
   符号が + であれば東経、- であれば西経を表します。
   AAA: 度 000～180
@@ -235,6 +243,7 @@ lon::
    DD: (1/100)秒 00～99
 
 つまり、次のようなリクエストクエリを含むURLに遷移されることになります。::
+
   http://example.com/sample.php?datum=wgs84&lat=%2B34.44.36.02&lon=%2B135.26.44.35
 
 注意事項
