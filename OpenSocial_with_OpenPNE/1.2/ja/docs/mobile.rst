@@ -98,9 +98,13 @@ FORMでも同様のURL指定を行って下さい。
 
 GPS
 
+::
+
   location:gps?callback=#URL#
 
 簡易位置情報
+
+::
 
   location:cell?callback=#URL#
 
@@ -115,9 +119,13 @@ callback
 
 GET
 
+::
+
   <a href="location:gps?callback=http%3A%2F%2Fexample.com%2Fsample.php">位置情報を取得する</a>
 
 POST
+
+::
 
   <form action="location:gps" method="post">
   <input type="hidden" name="callback" value="http://example.com/sample.php">
@@ -139,6 +147,8 @@ lon
   経度。
   例: ``+135.26.44.35``
 
-つまり、次のようなリクエストクエリを含むURLに遷移されることになります。
+つまり、次のようなクエリを含むURLに遷移されることになります。
+
+::
 
   http://example.com/sample.php?datum=wgs84&lat=%2B34.44.36.02&lon=%2B135.26.44.35
