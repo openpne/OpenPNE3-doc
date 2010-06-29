@@ -99,16 +99,21 @@ Shindigのディレクトリの *php/config/* に、 *local.php* を作成し、
 
   $shindigConfig = array(
     'debug' => false,
+
+    'allow_plaintext_token' => false,
+    'render_token_required' => true,
+    'allow_anonymous_token' => false,
+
     'token_cipher_key' => '#TOKEN_CIPHER_KEY#',
-    'token_hmac_key' => '#TOKEN_HMAC_KEY#',
-    'private_key_phrase' => '#KEY_PHRASE#',
+    'token_hmac_key'   => '#TOKEN_HMAC_KEY#',
+    'private_key_phrase'    => '#KEY_PHRASE#',
     'extension_class_paths' => '#EXTENSION_CLASS_PATH#',
-    'extension_autoloader' => true,
-    'person_service'   => 'OpenPNEService',
-    'activity_service' => 'OpenPNEService',
-    'app_data_service' => 'OpenPNEService',
-    'messages_service' => 'OpenPNEService',
-    'album_service' => 'OpenPNEService',
+    'extension_autoloader'  => true,
+    'person_service'     => 'OpenPNEService',
+    'activity_service'   => 'OpenPNEService',
+    'app_data_service'   => 'OpenPNEService',
+    'messages_service'   => 'OpenPNEService',
+    'album_service'      => 'OpenPNEService',
     'media_item_service' => 'OpenPNEService',
   );
 
