@@ -206,7 +206,7 @@ HTML の生成と同様、 SQL の生成にあたっても、ユーザ入力値�
 
   SELECT * FROM user WHERE username = "jsmith" AND password = "example";
 
-しかし、 `http://example.com/?username=jsmith%22;%20--%20&password=whatever` のような URL にアクセスすると、以下のクエリが実行されてしまいます (`--` は以降はコメント) ::
+しかし、 `http://example.com/?username=jsmith%22;%20--%20&password=whatever` のような URL にアクセスすると、以下のクエリが実行されてしまいます (`--` 以降はコメント) ::
 
   SELECT * FROM user WHERE username = "jsmith"; -- " AND password = "whatever";
 
