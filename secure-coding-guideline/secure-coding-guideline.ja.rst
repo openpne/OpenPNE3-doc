@@ -190,6 +190,76 @@ OpenPNE ではユーザのアップロードした画像を表示するために
 安全に SQL を生成する
 =====================
 
+HTML の生成と同様、 SQL の生成にあたっても、ユーザ入力値など信頼できない値の取り扱いには注意が必要です。
+
+ユーザ入力値を含んだ SQL 文を動的に生成する場合、その入力値によって、最終的に実行される SQL の構文を意図したものと違うものに変更されてしまう可能性があります。
+
+これは SQL Injection と呼ばれている脆弱性です。この脆弱性が存在していると、攻撃者にデータベースに存在する情報の漏洩や改ざんを許してしまいます。
+
+たとえば、以下のようなコードは SQL Injection に対して脆弱です::
+
+  <?php
+  // $pdo は PDO のインスタンス
+  $pdo->query(sprintf('SELECT * FROM user WHERE username = "%s" AND password = "%s";', $_GET['username'], $_GET['password']));
+
+`http://example.com/?username=jsmith&password=example` のような URL にアクセスがあった場合、このコードの意図通りに、以下の SQL 文が生成され、実行されます::
+
+  SELECT * FROM user WHERE username = "jsmith" AND password = "example";
+
+しかし、 `http://example.com/?username=jsmith%22;%20--%20&password=whatever` のような URL にアクセスすると、以下のクエリが実行されてしまいます (`--` は以降はコメント) ::
+
+  SELECT * FROM user WHERE username = "jsmith"; -- " AND password = "whatever";
+
+また、複数文の発行が許可されている場合には、 `http://example.com/?username=%22;%20DELETE%20FROM%20user;%20SELECT%20username%20AS%20dummy%20FROM%20user%20WHERE%20%22%22%20%3D%20%22&password=whatever` のような URL にアクセスされると、以下のように DELETE 文が発行されてしまいます::
+
+  SELECT * FROM user WHERE username = "";
+  DELETE FROM user;
+  SELECT username AS dummy FROM user WHERE "" = "" AND password = "whatever";
+
+OpenPNE で SQL Injection に対処するには、バインド機構を使用して SQL 文を生成するようにするのが一番よい解決方法です。
+
+バインド機構とは、実際の値を埋め込む場所を記号 (プレースホルダ) で示した SQL 文をあらかじめ準備しておき、後からプレースホルダを実際の値に置き換えて SQL を構築する機構のことをいいます。バインド機構はプレースホルダから実際の値に置き換えるときに、実際の値を正しくエスケープします。
+
+PDO はバインド機構に対応しているので、先に示したサンプルコードを以下のように変更することで、 SQL Injection からアプリケーションを守ることができます::
+
+  <?php
+  // $pdo は PDO のインスタンス
+  $sth = $pdo->prepare('SELECT * FROM user WHERE username = ? AND password = ?;');
+  $sth->execute(array($_GET['username'], $_GET['password']));
+
+OpenPNE においては、自分で SQL 文を生成するすべての箇所で SQL Injection に対して配慮をおこなわなければなりません。 OpenPNE ではほとんどの場合直接 SQL 文を書かずに、 Doctrine の DQL 文を直接記述もしくは構築し、その DQL を SQL に変換して実行するということをおこなっていますが、 この DQL も以下のように誤った形で組み立ててしまうと、結局、 SQL Injection に脆弱になってしまいます::
+
+  <?php
+  Doctrine::getTable('User')->createQuery()
+    ->where(sprintf('username = "%s" AND password = "%s"', $_GET['username'], $_GET['password']))
+    ->execute();
+
+このコードは、バインド機構を利用して DQL を組み立てるために、以下のように記述するべきです::
+
+  <?php
+  Doctrine::getTable('User')->createQuery()
+    ->where('username = ? AND password = ?', array($_GET['username'], $_GET['password']))
+    ->execute();
+
+一方で、たとえば Doctrine_Table::find() メソッドに関しては、 SQL Injection に対して配慮して SQL 文が生成されるため、引数を渡す際に特別な配慮をおこなう必要はありません。ですが、 Doctrine_Table::findBySql() や Doctrine_Table::findByDql() といった SQL や DQL を自分で組み立てるようなメソッドを利用する場合には、やはり、 SQL Injection に対する配慮が求められることになります。
+
+自分で SQL や DQL を組み立てる必要があり、 SQL Injection に対する配慮が必要なものとしては、たとえば以下のようなものがあります。
+
+ * PDO 以外のデータベース関連拡張が提供する関数群
+ * PDO::exec() や PDOStatement::execute() などクエリを実行する PDO のメソッド
+ * Doctrine_Connection::fetchAll() など直接 SQL を実行する Doctrine_Connection のメソッド
+ * Doctrine_RawSql
+ * Doctrine_Query
+ * Doctrine_Table::findBySql() など、自分で作成したクエリを元にレコードを取得するようなメソッド
+
+また、バインド機構を利用したとしても、ユーザ入力値に基づいてカラム名などを動的に組み立てるような場合は、 SQL Injection に対して脆弱となります。できるだけそのようなコードは控えるようにするべきですが、それが難しい場合、必ず、動的に組み立てる箇所に対してエスケープやクオート処理を実施してください。
+
+エスケープ等に使用できる Doctrine のメソッドとしては以下のようなものがあります。エスケープ等が必要な記号群やエスケープ手法などはデータベースエンジンによって異なります。そのため、独自処理を施すより、 Doctrine が用意しているメソッドを利用しておこなうことを強く推奨します。
+
+ * Doctrine_Formatter::escapePattern()
+ * Doctrine_Connection::quote()
+ * Doctrine_Connection::quoteIdentifier()
+
 安全に外部コマンドを実行する
 ============================
 
