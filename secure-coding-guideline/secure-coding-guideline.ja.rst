@@ -157,10 +157,10 @@ sfOutputEscaper のインスタンスは、アクションから渡された生�
 
 ただし、この対策をしても以下のような場合は依然として脆弱なことがあるので注意してください (対策方法は後述します)。
 
- * イベントハンドラを記述するような属性値 (onclick や onmouseover など) に入力値を埋め込む場合
- * 任意の要素の style 属性値
- * a 要素の href 属性値に入力値を埋め込む場合
- * img 要素の src 属性値に入力値を埋め込む場合
+ * イベントハンドラを記述するような属性値 (onclick や onmouseover など) に入力値を埋め込む場合 (JavaScript を記述可能)
+ * 任意の要素の style 属性値 (CSS を記述可能)
+ * a 要素の href 属性値に入力値を埋め込む場合 (javascript: スキームで任意の JavaScript を記述可能)
+ * img 要素の src 属性値に入力値を埋め込む場合 (javascript: スキームで任意の JavaScript を記述可能)
 
 JavaScript の生成
 -----------------
