@@ -61,8 +61,8 @@ PHP には、「バイナリセーフである関数」「バイナリセーフ�
 
 Null Byte Attack を利用して制限を回避し、脆弱性が成立した例として、以下のようなものがあります。
 
-phpBB "avatar_path" PHP Code Execution Vulnerability
-http://secunia.com/advisories/22188/
+phpBB "avatar_path" PHP Code Execution Vulnerability:
+  http://secunia.com/advisories/22188/
 
 OpenPNE では、例外的に、リクエスト中のヌル文字のみ除外して opWebRequest クラスのインスタンスに渡しています。これは、 PHP でバイナリセーフである関数とバイナリケースでない関数がすべて明確に示されているわけではなく、常にその関数がバイナリセーフかどうかを確認しながら関数を使用するのは困難なことと、 OpenPNE が Web アプリケーションであり、ヌル文字を意図的に受け入れるべき機会は少ないことなどが理由です。
 
