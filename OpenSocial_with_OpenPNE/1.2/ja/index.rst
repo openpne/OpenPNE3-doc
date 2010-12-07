@@ -38,7 +38,6 @@ OpenSocial with OpenPNE
    docs/javascript_api
    docs/restful_api
    docs/lifecycle_event
-   docs/mobile
 
 License
 =======
