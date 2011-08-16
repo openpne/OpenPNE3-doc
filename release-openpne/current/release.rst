@@ -6,26 +6,24 @@ About
 
 This is a procedure manual for releasing OpenPNE3.
 
-Create the bandled plugins list
+Create the bundled plugins list
 -------------------------------
 
-Check out the bandled-plugins-list directory::
+Check out the bundled-plugins-list directory::
 
-  $ svn co https://trac.openpne.jp/svn/OpenPNE3/bandled-plugins-list/
+  $ git clone git@github.com:openpne/bundled-plugins-list.git
 
 Create the list for this version of OpenPNE::
 
-  $ svn copy bandled-plugins-list/$VERSION-dev.yml bandled-plugins-list/$VERSION.yml
-  $ vi bandled-plugins-list/$VERSION.yml
-  $ svn ci -m "added the bandled plugins list for ${VERSION}" bandled-plugins-list
-  $ svn copy bandled-plugins-list/$VERSION.yml bandled-plugins-list/$NEXT_VERSION-dev.yml
-  $ svn ci -m "added the bandled plugins list for development of ${NEXT_VERSION}" bandled-plugins-list
-
-Update the list in the plugin channel server::
-
-  $ ssh $PLUGIN_CHANNEL_SERVER_HOST_NAME
-  $ cd /path/to/web/directory
-  $ svn up packages
+  $ cd bundled-plugins-list
+  $ cp $VERSION-dev.yml $VERSION.yml
+  $ vi $VERSION.yml
+  $ git add $VERSION.yml
+  $ git commit -m "added the bundled plugins list for ${VERSION}"
+  $ cp $VERSION.yml $NEXT_VERSION-dev.yml
+  $ git add $NEXT_VERSION-dev.yml
+  $ git commit -m "added the bundled plugins list for development of ${NEXT_VERSION}"
+  $ git push origin master
 
 Updated version definition file
 --------------------------------
